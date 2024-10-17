@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/etma
+          images: wahideng/etma
 
       # Login to Docker registry (Docker Hub or other registries)
       - name: Log in to Docker Hub
