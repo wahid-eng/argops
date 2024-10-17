@@ -1,0 +1,56 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Login to Docker registry (Docker Hub or other registries)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} # Store in GitHub Secrets
+          password: ${{ secrets.DOCKER_PASSWORD }} # Store in GitHub Secrets
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/etma:${{ github.sha }} .
+
+      # Run Tests (for example, using npm for Node.js services)
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+      # Push the Docker image only if the branch is main
+      - name: Push Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag ${{ secrets.DOCKER_USERNAME }}/etma:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/etma:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/etma:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/etma:latest
