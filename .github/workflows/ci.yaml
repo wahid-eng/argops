@@ -25,14 +25,18 @@ jobs:
           PORT: 3000
 
       # Make sure no error during build image
-      # Build the version number using the run number
-      - name: Set version
-        id: set_version
+
+      # Login to Docker registry (Docker Hub or other registries)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Get Docker Image Version
         run: |
-          BUILD_NUMBER=${{ github.run_number }}
-          VERSION="1.0.0-build.${BUILD_NUMBER}"
-          echo "VERSION=$VERSION"
-          echo "name=version::${VERSION}" >> $GITHUB_OUTPUT
+          VERSION=$(docker inspect --format='{{index .Config.Labels "version"}}' ${{ secrets.DOCKER_USERNAME }}/etma)
+          echo "Current Docker image version is: $VERSION"
 
       # Set up Docker
       - name: Set up Docker Buildx
@@ -45,13 +49,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ steps.set_version.outputs.version }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
-      # Login to Docker registry (Docker Hub or other registries)
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Build the Docker image
       - name: Build Docker image
