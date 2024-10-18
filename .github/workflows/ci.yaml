@@ -26,9 +26,9 @@ jobs:
 
       # Make sure no error during build image
 
-      - name: Docker Image Metadata
+      - name: Docker Metadata action
+        uses: docker/metadata-action@v5
         id: meta
-        uses: docker/metadata-action
         with:
           images: wahideng/etma
 
