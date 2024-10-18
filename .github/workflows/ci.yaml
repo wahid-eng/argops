@@ -1,4 +1,4 @@
-name: CI Workflow
+name: Continuous Integration
 
 on:
   pull_request:
@@ -24,4 +24,4 @@ jobs:
 
       # Make sure no error during build image
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/etma:${{ github.event.number }} .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/etma:@v${{ github.event.number }} .
